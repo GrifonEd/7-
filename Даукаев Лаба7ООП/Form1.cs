@@ -22,7 +22,7 @@ namespace Даукаев_Лаба7ООП
         int index_sozdania=0;
         Graphics graphics;
         Storage storage = new Storage(sizeStorage);
-
+        static int newsize = 1;
         public Form1()
         {
             InitializeComponent();
@@ -31,7 +31,98 @@ namespace Даукаев_Лаба7ООП
             picture.Image = bitmap;
 
         }
+        public class Observer
+        {
+            public virtual void SubjectChanged() { return; }
+        }
+        class Tree : Observer
+        {
+            private Storage objects1;
+            private TreeView tree;
+            int sizeobjects2 ;
+            public Tree(Storage objects1, TreeView tree)
+            {
+                objects1 = objects1;
+                this.tree = tree;
+            }
 
+            public void Print()
+            {
+                tree.Nodes.Clear();
+                if (sizeStorage > 1)
+                {
+                    int SelectedIndex = 0;
+                    TreeNode start = new TreeNode("Фигуры");
+                    
+                    for (int i = 0; i < sizeStorage; i++)
+                    {
+                        if (objects1.objects[i]!=null ) SelectedIndex = i;
+                        PrintNode(start, objects1.objects[i]);
+                    }
+                    tree.Nodes.Add(start);
+
+                    for (int i = 0; i <sizeStorage; i++)
+                    {
+                        
+                        tree.SelectedNode = tree.Nodes[0].Nodes[i];
+                        if (objects1.objects[i].choose == true)
+                            tree.SelectedNode.ForeColor = Color.Red;
+                        else tree.SelectedNode.ForeColor = Color.Black;
+                    }
+                }
+                tree.ExpandAll();
+
+            }
+
+            private void PrintNode(TreeNode node, Shape shape)
+            {
+                if (shape is Sgroup)
+                {
+                    TreeNode tn = new TreeNode(shape.x.ToString());
+                    if (newsize != 1)
+                        { 
+                        for (int i = 0; i < newsize; i++)
+                            PrintNode(tn, ((Sgroup)shape).objects2.objects[i]);
+                    }
+                    node.Nodes.Add(tn);
+                }
+                else
+                {
+
+                    node.Nodes.Add((shape.x.ToString()));
+                }
+            }
+
+            public override void SubjectChanged()
+            {
+                Print();
+            }
+        }
+        public class ObjObserved
+        {
+            public Storage storage;
+            public void AddStorage(Storage sto)
+            {
+                storage = sto;
+            }
+        }
+
+        public class Observed
+        {
+            private List<Observer> observers;
+            public Observed()
+            {
+                observers = new List<Observer>();
+            }
+            public void AddObserver(Observer o)
+            {
+                observers.Add(o);
+            }
+            public void Notify()
+            {
+                foreach (Observer observer in observers) observer.SubjectChanged();
+            }
+        }
 
         abstract public class Shape
         {
@@ -290,14 +381,17 @@ namespace Даукаев_Лаба7ООП
         public class Sgroup : Shape
         {
             int width, height;
-            
+            public Storage objects2;
+            int newsize = 1;
             public Sgroup()
             {
+                objects2 = new Storage(1);
                 ClassName = "Sgroup";
 
             }
             public Sgroup(int Width,int Height)
             {
+                objects2 = new Storage(1);
                 ClassName = "Sgroup";
                 width = Width;
                 height = Height;
@@ -305,11 +399,14 @@ namespace Даукаев_Лаба7ООП
             ~Sgroup()
             {
             }
-            public void Add(ref Storage storage,Shape s,ref int ind,ref int index,bool one)
+            public void Add(Shape s)
             {
-                storage.add_object(ref sizeStorage, s, ref ind, ref index);
+                int ind = 0;
+                    int index = 0;
+                
+                objects2.add_object(ref newsize, s, ref ind, ref index);
               //  sto.get().sticky = false;
-                if (one==true) rect = new Rectangle(s.x, s.y, 2*s.R, 2*s.R);
+                if (newsize == 2) rect = new Rectangle(s.x, s.y, 2*s.R, 2*s.R);
                 else
                 {
                     if (s.x < rect.Left)
@@ -318,14 +415,16 @@ namespace Даукаев_Лаба7ООП
                         rect.X = s.x;
                         rect.Width = tmp - rect.X;
                     }
-                    if (s.x+(s.R*2) > rect.Right) rect.Width = s.x+s.R*2 - rect.X;
+                    if (s.x+(s.R*2) > rect.Right) 
+                        rect.Width = s.x+s.R*2 - rect.X;
                     if (s.y < rect.Top)
                     {
                         int tmp = rect.Bottom;
                         rect.Y = s.y;
                         rect.Height = tmp - rect.Y;
                     }
-                    if (s.y + s.R * 2 > rect.Bottom) rect.Height = s.y + s.R * 2 - rect.Y;
+                    if (s.y + s.R * 2 > rect.Bottom) 
+                        rect.Height = s.y + s.R * 2 - rect.Y;
                 }
             }
             public override string Class_Name()
@@ -1071,7 +1170,7 @@ namespace Даукаев_Лаба7ООП
 
         private void BTN_group_Click(object sender, EventArgs e)
         {
-            bool one = true;
+           
             if (sizeStorage != 0)
             {
                 Sgroup group = new Sgroup(picture.Width, picture.Height);
@@ -1084,12 +1183,12 @@ namespace Даукаев_Лаба7ООП
                     for (int i = 0; i < sizeStorage-1; i++)
                         if (storage.objects[i].choose== true)
                     {
-                        group.Add(ref storage,storage.objects[i],ref kolvo_elem,ref index_sozdania,one);
+                        group.Add(storage.objects[i]);
                             storage.Delte_obj1(i);
                             kolvo_elem--;
                             index_sozdania--;
                         cnt--;
-                            one = false;
+                            
                     }
                     
                 }
@@ -1097,7 +1196,7 @@ namespace Даукаев_Лаба7ООП
             }
             picture.Invalidate();
             button3_Click(sender, e);
-            one = true;
+            
         }
     }
 }
