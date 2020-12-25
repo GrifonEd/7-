@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.IO;
 
 namespace Даукаев_Лаба7ООП
 {
@@ -46,8 +47,8 @@ namespace Даукаев_Лаба7ООП
             abstract public void Move(Storage storage,int dx,int dy);
             abstract public void New_Color();
             abstract public void Resize(Storage storage, int dx);
-            abstract public void Save();
-            abstract public void Load();
+            abstract public void Save(StreamWriter stream);
+            abstract public void Load(StreamReader stream);
            // abstract public string Show();
             abstract public void Draw();
 
@@ -106,14 +107,20 @@ namespace Даукаев_Лаба7ООП
                             storage.objects[i].R += dx;
                         }
             }
-             public override void Save()
+             public override void Save(StreamWriter stream)
             {
-                ;
+                stream.WriteLine("Square");
+                stream.WriteLine((x + R) + " " + (y + R) + " " + R + " " + color.R + " " + color.G + " " + color.B);
             }
-             public override void Load()
+             public override void Load(StreamReader stream)
         {
-            ;
-        }
+                string[] data = stream.ReadLine().Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                x = Convert.ToInt32(data[0]);
+                y = Convert.ToInt32(data[1]);
+                R = Convert.ToInt32(data[2]);
+                color = Color.FromArgb(Convert.ToInt32(data[3]), Convert.ToInt32(data[4]), Convert.ToInt32(data[5]));
+                //Resize();
+            }
            /*  public override string Show()
         {
             ;
@@ -180,13 +187,18 @@ namespace Даукаев_Лаба7ООП
                             storage.objects[i].R += dx;
                         }
             }
-            public override void Save()
+            public override void Save(StreamWriter stream)
             {
-                ;
+                stream.WriteLine("Triangle");
+                stream.WriteLine((x + R) + " " + (y + R) + " " + R + " " + color.R + " " + color.G + " " + color.B);
             }
-            public override void Load()
+            public override void Load(StreamReader stream)
             {
-                ;
+                string[] data = stream.ReadLine().Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                x = Convert.ToInt32(data[0]);
+                y = Convert.ToInt32(data[1]);
+                R = Convert.ToInt32(data[2]);
+                color = Color.FromArgb(Convert.ToInt32(data[3]), Convert.ToInt32(data[4]), Convert.ToInt32(data[5]));
             }
             /*  public override string Show()
          {
@@ -248,13 +260,18 @@ namespace Даукаев_Лаба7ООП
                             storage.objects[i].R += dx;
                         }
             }
-            public override void Save()
+            public override void Save(StreamWriter stream)
             {
-                ;
+                stream.WriteLine("CCircle");
+                stream.WriteLine((x + R) + " " + (y + R) + " " + R + " " + color.R + " " + color.G + " " + color.B);
             }
-            public override void Load()
+            public override void Load(StreamReader stream)
             {
-                ;
+                string[] data = stream.ReadLine().Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                x = Convert.ToInt32(data[0]);
+                y = Convert.ToInt32(data[1]);
+                R = Convert.ToInt32(data[2]);
+                color = Color.FromArgb(Convert.ToInt32(data[3]), Convert.ToInt32(data[4]), Convert.ToInt32(data[5]));
             }
             /*  public override string Show()
          {
@@ -526,16 +543,46 @@ namespace Даукаев_Лаба7ООП
                     }
                     return;
                 }
-                storage.add_object(ref sizeStorage, ref krug, kolvo_elem, ref index_sozdania);
+                storage.add_object(ref sizeStorage, krug, ref kolvo_elem, ref index_sozdania);
                 Remove_Selection(ref storage);
                 storage.objects[index_sozdania].color = selected_color;
                 storage.objects[index_sozdania].choose = true;
                 MyPaint(index_sozdania, ref storage);
-                kolvo_elem++;
+                
                 button3_Click(sender, e);
             }
 
 
+        }
+        public abstract class Factory
+        {
+            public abstract Shape createShape(string name);
+        }
+        public class ShapeFactory : Factory
+        {
+            public override Shape createShape(string name)
+            {
+                Shape shape;
+                switch (name)
+                {
+                    case "CCircle":
+                        shape = new CCircle();
+                        break;
+                    case "Square":
+                        shape = new Square();
+                        break;
+                    case "Triangle":
+                        shape = new Triangle();
+                        break;
+                   /* case "Sgroup":
+                        shape = new Sgroup();
+                        break;*/
+                    default:
+                        shape = null;
+                        break;
+                }
+                return shape;
+            }
         }
         public class Storage
         {
@@ -547,7 +594,7 @@ namespace Даукаев_Лаба7ООП
                 for (int i = 0; i < size; i++)
                     objects[i] = null;
             }
-            public void add_object(ref int size, ref Shape new_object, int ind, ref int index_sozdania)
+            public void add_object(ref int size,  Shape new_object, ref int ind, ref int index_sozdania)
             {
                 Storage storage1 = new Storage(size + 1);
                 for (int i = 0; i < size; i++)
@@ -558,6 +605,7 @@ namespace Даукаев_Лаба7ООП
                     objects[i] = storage1.objects[i];
                 objects[ind] = new_object;
                 index_sozdania = ind;
+                ind++;
             }
             public Shape GetObject(int index)
             {
@@ -634,6 +682,7 @@ namespace Даукаев_Лаба7ООП
             sizeStorage = 1;
             storage = new Storage(sizeStorage);
             kolvo_elem = 0;
+            index_sozdania = 0;
         }
 
         private void ButtonDelThis_Click(object sender, EventArgs e)
@@ -859,6 +908,46 @@ namespace Даукаев_Лаба7ООП
         private void picture_Paint(object sender, PaintEventArgs e)
         {
 
+        }
+
+        private void Saving_Click(object sender, EventArgs e)
+        {
+            if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                FileStream f = new FileStream(saveFileDialog1.FileName, FileMode.Create);
+                StreamWriter stream = new StreamWriter(f);
+                stream.WriteLine(sizeStorage);
+                if (sizeStorage != 1)
+                {
+                    
+                    for (int i = 0; i < sizeStorage-1; i++)
+                        storage.objects[i].Save(stream);
+                }
+                stream.Close();
+                f.Close();
+            }
+        }
+
+        private void Load_Click(object sender, EventArgs e)
+        {
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                FileStream f = new FileStream(openFileDialog1.FileName, FileMode.Open);
+                StreamReader stream = new StreamReader(f);
+                int i = Convert.ToInt32(stream.ReadLine())-1;
+                Factory shapeFactory = new ShapeFactory();  //фабрика КОНКРЕТНЫХ объектов
+                for (int j=0; j < i; j++)
+                {
+                    string tmp = stream.ReadLine();
+                    storage.add_object(ref sizeStorage, shapeFactory.createShape(tmp), ref kolvo_elem, ref index_sozdania);
+                    storage.objects[j].Load(stream);
+                }
+                stream.Close();
+                f.Close();
+            }
+            picture.Invalidate();
+            button3_Click(sender, e);
+            //tree.Print();
         }
     }
 }

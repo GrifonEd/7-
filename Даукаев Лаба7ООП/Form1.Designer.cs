@@ -48,7 +48,9 @@
             this.черныйToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.зеленыйToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
-            this.saving = new System.Windows.Forms.Button();
+            this.Saving = new System.Windows.Forms.Button();
+            this.Load = new System.Windows.Forms.Button();
+            this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             ((System.ComponentModel.ISupportInitialize)(this.picture)).BeginInit();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -142,7 +144,7 @@
             this.цветToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(1301, 36);
+            this.menuStrip1.Size = new System.Drawing.Size(1301, 33);
             this.menuStrip1.TabIndex = 9;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -154,7 +156,7 @@
             this.треугольникToolStripMenuItem,
             this.отрезокToolStripMenuItem});
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(87, 32);
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(87, 29);
             this.toolStripMenuItem1.Text = "Фигура";
             // 
             // кругToolStripMenuItem
@@ -197,7 +199,7 @@
             this.черныйToolStripMenuItem,
             this.зеленыйToolStripMenuItem});
             this.цветToolStripMenuItem.Name = "цветToolStripMenuItem";
-            this.цветToolStripMenuItem.Size = new System.Drawing.Size(67, 32);
+            this.цветToolStripMenuItem.Size = new System.Drawing.Size(67, 29);
             this.цветToolStripMenuItem.Text = "Цвет";
             // 
             // синийToolStripMenuItem
@@ -233,15 +235,29 @@
             this.зеленыйToolStripMenuItem.Text = "Зеленый";
             this.зеленыйToolStripMenuItem.Click += new System.EventHandler(this.зеленыйToolStripMenuItem_Click);
             // 
-            // saving
+            // Saving
             // 
-            this.saving.Location = new System.Drawing.Point(1114, 474);
-            this.saving.Name = "saving";
-            this.saving.Size = new System.Drawing.Size(75, 23);
-            this.saving.TabIndex = 10;
-            this.saving.Text = "button1";
-            this.saving.UseVisualStyleBackColor = true;
-
+            this.Saving.Location = new System.Drawing.Point(1078, 432);
+            this.Saving.Name = "Saving";
+            this.Saving.Size = new System.Drawing.Size(95, 43);
+            this.Saving.TabIndex = 10;
+            this.Saving.Text = "Save";
+            this.Saving.UseVisualStyleBackColor = true;
+            this.Saving.Click += new System.EventHandler(this.Saving_Click);
+            // 
+            // Load
+            // 
+            this.Load.Location = new System.Drawing.Point(1180, 433);
+            this.Load.Name = "Load";
+            this.Load.Size = new System.Drawing.Size(109, 42);
+            this.Load.TabIndex = 11;
+            this.Load.Text = "Load";
+            this.Load.UseVisualStyleBackColor = true;
+            this.Load.Click += new System.EventHandler(this.Load_Click);
+            // 
+            // openFileDialog1
+            // 
+            this.openFileDialog1.FileName = "openFileDialog1";
             // 
             // Form1
             // 
@@ -249,7 +265,8 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(192)))));
             this.ClientSize = new System.Drawing.Size(1301, 622);
-            this.Controls.Add(this.saving);
+            this.Controls.Add(this.Load);
+            this.Controls.Add(this.Saving);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.MoveButton);
@@ -294,7 +311,9 @@
         private System.Windows.Forms.ToolStripMenuItem черныйToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem зеленыйToolStripMenuItem;
         private System.Windows.Forms.SaveFileDialog saveFileDialog1;
-        private System.Windows.Forms.Button saving;
+        private System.Windows.Forms.Button Saving;
+        private System.Windows.Forms.Button Load;
+        private System.Windows.Forms.OpenFileDialog openFileDialog1;
     }
 }
 
