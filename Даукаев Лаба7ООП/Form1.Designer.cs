@@ -51,6 +51,8 @@
             this.Saving = new System.Windows.Forms.Button();
             this.Load = new System.Windows.Forms.Button();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
+            this.BTN_group = new System.Windows.Forms.Button();
+            this.BTN_ungroup = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.picture)).BeginInit();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -69,7 +71,7 @@
             // 
             // ButtonDelThis
             // 
-            this.ButtonDelThis.Location = new System.Drawing.Point(1078, 72);
+            this.ButtonDelThis.Location = new System.Drawing.Point(1078, 36);
             this.ButtonDelThis.Name = "ButtonDelThis";
             this.ButtonDelThis.Size = new System.Drawing.Size(215, 81);
             this.ButtonDelThis.TabIndex = 1;
@@ -79,7 +81,7 @@
             // 
             // button2
             // 
-            this.button2.Location = new System.Drawing.Point(1078, 159);
+            this.button2.Location = new System.Drawing.Point(1078, 123);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(215, 83);
             this.button2.TabIndex = 2;
@@ -89,7 +91,7 @@
             // 
             // button3
             // 
-            this.button3.Location = new System.Drawing.Point(1074, 248);
+            this.button3.Location = new System.Drawing.Point(1078, 212);
             this.button3.Name = "button3";
             this.button3.Size = new System.Drawing.Size(215, 90);
             this.button3.TabIndex = 3;
@@ -99,7 +101,7 @@
             // 
             // button4
             // 
-            this.button4.Location = new System.Drawing.Point(1074, 344);
+            this.button4.Location = new System.Drawing.Point(1078, 308);
             this.button4.Name = "button4";
             this.button4.Size = new System.Drawing.Size(215, 82);
             this.button4.TabIndex = 4;
@@ -237,9 +239,9 @@
             // 
             // Saving
             // 
-            this.Saving.Location = new System.Drawing.Point(1078, 432);
+            this.Saving.Location = new System.Drawing.Point(1078, 396);
             this.Saving.Name = "Saving";
-            this.Saving.Size = new System.Drawing.Size(95, 43);
+            this.Saving.Size = new System.Drawing.Size(100, 43);
             this.Saving.TabIndex = 10;
             this.Saving.Text = "Save";
             this.Saving.UseVisualStyleBackColor = true;
@@ -247,9 +249,9 @@
             // 
             // Load
             // 
-            this.Load.Location = new System.Drawing.Point(1180, 433);
+            this.Load.Location = new System.Drawing.Point(1184, 396);
             this.Load.Name = "Load";
-            this.Load.Size = new System.Drawing.Size(109, 42);
+            this.Load.Size = new System.Drawing.Size(109, 43);
             this.Load.TabIndex = 11;
             this.Load.Text = "Load";
             this.Load.UseVisualStyleBackColor = true;
@@ -259,12 +261,33 @@
             // 
             this.openFileDialog1.FileName = "openFileDialog1";
             // 
+            // BTN_group
+            // 
+            this.BTN_group.Location = new System.Drawing.Point(1078, 445);
+            this.BTN_group.Name = "BTN_group";
+            this.BTN_group.Size = new System.Drawing.Size(100, 80);
+            this.BTN_group.TabIndex = 12;
+            this.BTN_group.Text = "Сгруппировать";
+            this.BTN_group.UseVisualStyleBackColor = true;
+            this.BTN_group.Click += new System.EventHandler(this.BTN_group_Click);
+            // 
+            // BTN_ungroup
+            // 
+            this.BTN_ungroup.Location = new System.Drawing.Point(1184, 445);
+            this.BTN_ungroup.Name = "BTN_ungroup";
+            this.BTN_ungroup.Size = new System.Drawing.Size(109, 80);
+            this.BTN_ungroup.TabIndex = 13;
+            this.BTN_ungroup.Text = "Разгруппировать";
+            this.BTN_ungroup.UseVisualStyleBackColor = true;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(192)))));
             this.ClientSize = new System.Drawing.Size(1301, 622);
+            this.Controls.Add(this.BTN_ungroup);
+            this.Controls.Add(this.BTN_group);
             this.Controls.Add(this.Load);
             this.Controls.Add(this.Saving);
             this.Controls.Add(this.label2);
@@ -314,6 +337,8 @@
         private System.Windows.Forms.Button Saving;
         private System.Windows.Forms.Button Load;
         private System.Windows.Forms.OpenFileDialog openFileDialog1;
+        private System.Windows.Forms.Button BTN_group;
+        private System.Windows.Forms.Button BTN_ungroup;
     }
 }
 

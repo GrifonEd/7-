@@ -17,9 +17,9 @@ namespace Даукаев_Лаба7ООП
         Color current_color = Color.DarkBlue;
         Color basic_color = Color.DarkBlue;
         Color selected_color = Color.Red;
-        int kolvo_elem = 0;
+        public int kolvo_elem = 0;
         static int sizeStorage = 1;
-        int index_sozdania;
+        int index_sozdania=0;
         Graphics graphics;
         Storage storage = new Storage(sizeStorage);
 
@@ -35,6 +35,7 @@ namespace Даукаев_Лаба7ООП
 
         abstract public class Shape
         {
+            public Rectangle rect;
             public PointF[] polygonPoints = new PointF[3];
             protected string ClassName;
             public int R ;
@@ -286,6 +287,99 @@ namespace Даукаев_Лаба7ООП
             {
             }
         }
+        public class Sgroup : Shape
+        {
+            int width, height;
+            
+            public Sgroup()
+            {
+                ClassName = "Sgroup";
+
+            }
+            public Sgroup(int Width,int Height)
+            {
+                ClassName = "Sgroup";
+                width = Width;
+                height = Height;
+            }
+            ~Sgroup()
+            {
+            }
+            public void Add(ref Storage storage,Shape s,ref int ind,ref int index,bool one)
+            {
+                storage.add_object(ref sizeStorage, s, ref ind, ref index);
+              //  sto.get().sticky = false;
+                if (one==true) rect = new Rectangle(s.x, s.y, 2*s.R, 2*s.R);
+                else
+                {
+                    if (s.x < rect.Left)
+                    {
+                        int tmp = rect.Right;
+                        rect.X = s.x;
+                        rect.Width = tmp - rect.X;
+                    }
+                    if (s.x+(s.R*2) > rect.Right) rect.Width = s.x+s.R*2 - rect.X;
+                    if (s.y < rect.Top)
+                    {
+                        int tmp = rect.Bottom;
+                        rect.Y = s.y;
+                        rect.Height = tmp - rect.Y;
+                    }
+                    if (s.y + s.R * 2 > rect.Bottom) rect.Height = s.y + s.R * 2 - rect.Y;
+                }
+            }
+            public override string Class_Name()
+            {
+                return ClassName;
+            }
+            public override void Move(Storage storage, int dx, int dy)
+            {
+                for (int i = 0; i < sizeStorage; i++)
+                    if (!storage.proverka(i))
+                        if (storage.objects[i].choose == true)
+                        {
+                            storage.objects[i].y += dy;
+                            storage.objects[i].x += dx;
+                        }
+            }
+            public override void New_Color()
+            {
+                ;
+            }
+            public override void Resize(Storage storage, int dx)
+            {
+                for (int i = 0; i < sizeStorage; i++)
+                    if (!storage.proverka(i))
+                        if (storage.objects[i].choose == true)
+                        {
+                            storage.objects[i].y -= dx;
+                            storage.objects[i].x -= dx;
+                            storage.objects[i].R += dx;
+                        }
+            }
+            public override void Save(StreamWriter stream)
+            {
+                stream.WriteLine("Sgroup");
+                stream.WriteLine((x + R) + " " + (y + R) + " " + R + " " + color.R + " " + color.G + " " + color.B);
+            }
+            public override void Load(StreamReader stream)
+            {
+                string[] data = stream.ReadLine().Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                x = Convert.ToInt32(data[0]);
+                y = Convert.ToInt32(data[1]);
+                R = Convert.ToInt32(data[2]);
+                color = Color.FromArgb(Convert.ToInt32(data[3]), Convert.ToInt32(data[4]), Convert.ToInt32(data[5]));
+                //Resize();
+            }
+            /*  public override string Show()
+         {
+             ;
+         }*/
+            public override void Draw()
+            {
+                ;
+            }
+        }
         private int Check_In(ref Storage storage, int size, int x, int y, int R)
         {
             if (storage.kolvo_zanyatix(size) != 0)
@@ -302,6 +396,11 @@ namespace Даукаев_Лаба7ООП
                             if (storage.objects[i].Class_Name() == "Triangle")
                             {
                                 if (((x - R) - (storage.objects[i].x + storage.objects[i].R)) * ((x - R) - (storage.objects[i].x + storage.objects[i].R)) + ((y - R) - (storage.objects[i].y + storage.objects[i].R)) * ((y - R) - (storage.objects[i].y + storage.objects[i].R)) <= storage.objects[i].R * storage.objects[i].R)
+                                    return i;
+                            }
+                            if (storage.objects[i].Class_Name() == "Sgroup")
+                            {
+                                if (x< storage.objects[i].rect.Right&& x > storage.objects[i].rect.Left && y < storage.objects[i].rect.Bottom && y > storage.objects[i].rect.Top)
                                     return i;
                             }
                         }
@@ -371,6 +470,7 @@ namespace Даукаев_Лаба7ООП
 
 
                 }
+
                 Pen pen = new Pen(storage.objects[kolvo_elem].color, 4);
 
                 Pen pen1 = new Pen(current_color, 10);
@@ -413,6 +513,11 @@ namespace Даукаев_Лаба7ООП
                     else
                         graphics.DrawPolygon(pen, Hi.polygonPoints);
 
+                }
+                if (storage.objects[kolvo_elem].Class_Name() == "Sgroup")
+                {
+                    Sgroup Hi = (Sgroup)storage.objects[kolvo_elem];
+                    graphics.DrawRectangle(pen1, Hi.rect);
                 }
             }
             picture.Image = bitmap;
@@ -574,9 +679,9 @@ namespace Даукаев_Лаба7ООП
                     case "Triangle":
                         shape = new Triangle();
                         break;
-                   /* case "Sgroup":
+                    case "Sgroup":
                         shape = new Sgroup();
-                        break;*/
+                        break;
                     default:
                         shape = null;
                         break;
@@ -641,6 +746,20 @@ namespace Даукаев_Лаба7ООП
                     kolvo_elem--;
                 }
             }
+            public void Delte_obj1( int pozicia)
+            {
+                if (objects[pozicia] != null)
+                {
+                    objects[pozicia] = null;
+                    for(int i = pozicia; i < sizeStorage-1; i++)
+                    {
+                        objects[i] = objects[i + 1];
+                    }
+                    sizeStorage--;
+                    
+                }
+
+            }
 
         }
 
@@ -690,7 +809,7 @@ namespace Даукаев_Лаба7ООП
             if (storage.kolvo_zanyatix(sizeStorage) != 0)
                 for (int i = 0; i < sizeStorage; i++)
                     if (storage.proverka(i) == false && (storage.objects[i].choose == true))
-                        storage.Delte_obj(ref i);
+                        storage.Delte_obj1( i);
 
             button2_Click(sender, e);
             button3_Click(sender, e);
@@ -948,6 +1067,37 @@ namespace Даукаев_Лаба7ООП
             picture.Invalidate();
             button3_Click(sender, e);
             //tree.Print();
+        }
+
+        private void BTN_group_Click(object sender, EventArgs e)
+        {
+            bool one = true;
+            if (sizeStorage != 0)
+            {
+                Sgroup group = new Sgroup(picture.Width, picture.Height);
+                int cnt = 0;
+                for (int i = 0; i < sizeStorage-1; i++) //считаем количество отмеченных элементов
+                    if (storage.objects[i].choose == true) 
+                        cnt++;
+                while (cnt != 0)
+                {
+                    for (int i = 0; i < sizeStorage-1; i++)
+                        if (storage.objects[i].choose== true)
+                    {
+                        group.Add(ref storage,storage.objects[i],ref kolvo_elem,ref index_sozdania,one);
+                            storage.Delte_obj1(i);
+                            kolvo_elem--;
+                            index_sozdania--;
+                        cnt--;
+                            one = false;
+                    }
+                    
+                }
+                storage.add_object(ref sizeStorage, group, ref kolvo_elem, ref index_sozdania);
+            }
+            picture.Invalidate();
+            button3_Click(sender, e);
+            one = true;
         }
     }
 }
