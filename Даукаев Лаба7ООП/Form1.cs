@@ -17,12 +17,11 @@ namespace Даукаев_Лаба7ООП
         Color current_color = Color.DarkBlue;
         Color basic_color = Color.DarkBlue;
         Color selected_color = Color.Red;
-        public int kolvo_elem = 0;
+        static int kolvo_elem = 0;
         static int sizeStorage = 1;
-        int index_sozdania=0;
+        static int index_sozdania = 0;
         Graphics graphics;
-        Storage storage = new Storage(sizeStorage);
-        static int newsize = 1;
+        Storage storage = new Storage(1);
         public Form1()
         {
             InitializeComponent();
@@ -35,11 +34,11 @@ namespace Даукаев_Лаба7ООП
         {
             public virtual void SubjectChanged() { return; }
         }
-        class Tree : Observer
+      /*  class Tree : Observer
         {
             private Storage objects1;
             private TreeView tree;
-            int sizeobjects2 ;
+
             public Tree(Storage objects1, TreeView tree)
             {
                 objects1 = objects1;
@@ -49,21 +48,21 @@ namespace Даукаев_Лаба7ООП
             public void Print()
             {
                 tree.Nodes.Clear();
-                if (sizeStorage > 1)
+                if (storage.currentSize > 1)
                 {
                     int SelectedIndex = 0;
                     TreeNode start = new TreeNode("Фигуры");
-                    
-                    for (int i = 0; i < sizeStorage; i++)
+
+                    for (int i = 0; i < storage.currentSize; i++)
                     {
-                        if (objects1.objects[i]!=null ) SelectedIndex = i;
+                        if (objects1.objects[i] != null) SelectedIndex = i;
                         PrintNode(start, objects1.objects[i]);
                     }
                     tree.Nodes.Add(start);
 
-                    for (int i = 0; i <sizeStorage; i++)
+                    for (int i = 0; i < storage.currentSize; i++)
                     {
-                        
+
                         tree.SelectedNode = tree.Nodes[0].Nodes[i];
                         if (objects1.objects[i].choose == true)
                             tree.SelectedNode.ForeColor = Color.Red;
@@ -79,9 +78,9 @@ namespace Даукаев_Лаба7ООП
                 if (shape is Sgroup)
                 {
                     TreeNode tn = new TreeNode(shape.x.ToString());
-                    if (newsize != 1)
-                        { 
-                        for (int i = 0; i < newsize; i++)
+                    if (objects1.currentSize != 1)
+                    {
+                        for (int i = 0; i < objects1.currentSize; i++)
                             PrintNode(tn, ((Sgroup)shape).objects2.objects[i]);
                     }
                     node.Nodes.Add(tn);
@@ -97,7 +96,7 @@ namespace Даукаев_Лаба7ООП
             {
                 Print();
             }
-        }
+        }*/
         public class ObjObserved
         {
             public Storage storage;
@@ -129,20 +128,20 @@ namespace Даукаев_Лаба7ООП
             public Rectangle rect;
             public PointF[] polygonPoints = new PointF[3];
             protected string ClassName;
-            public int R ;
+            public int R;
             public Color color;
             public int x, y;
             public bool choose = false;
             public bool narisovana = true;
 
             abstract public string Class_Name();
-            abstract public void Move(Storage storage,int dx,int dy);
+            abstract public void Move(Storage storage, int dx, int dy);
             abstract public void New_Color();
             abstract public void Resize(Storage storage, int dx);
             abstract public void Save(StreamWriter stream);
             abstract public void Load(StreamReader stream);
-           // abstract public string Show();
-            abstract public void Draw();
+            // abstract public string Show();
+            abstract public void Draw(Pen pen, Graphics graphics);
 
 
 
@@ -150,7 +149,7 @@ namespace Даукаев_Лаба7ООП
         }
         public class Square : Shape
         {
-         
+
             public Square()
             {
                 ClassName = "Square";
@@ -159,7 +158,7 @@ namespace Даукаев_Лаба7ООП
                 R = 0;
 
             }
-            public Square(int x, int y, Color color,int Rad)
+            public Square(int x, int y, Color color, int Rad)
             {
                 ClassName = "Square";
                 this.x = x - Rad;
@@ -174,23 +173,37 @@ namespace Даукаев_Лаба7ООП
             {
                 return ClassName;
             }
-            public override void Move(Storage storage,int dx,int dy)
+            public override void Move(Storage storage, int dx, int dy)
             {
-                for (int i = 0; i < sizeStorage; i++)
+                for (int i = 0; i < storage.currentSize; i++)
+
                     if (!storage.proverka(i))
                         if (storage.objects[i].choose == true)
                         {
-                                storage.objects[i].y += dy;
-                                storage.objects[i].x += dx;
+                            if (storage.objects[i] is Sgroup)
+                            {
+                                Sgroup Hi = (Sgroup)storage.objects[i];
+                                for (int j = 0; j < Hi.objects2.currentSize - 1; j++)
+                                {
+                                    Hi.objects2.objects[j].y += dy;
+                                    Hi.objects2.objects[j].x += dx;
+                                }
+                                storage.objects[i] = Hi;
+                            }
+
+                            storage.objects[i].rect = new Rectangle(storage.objects[i].x + dx, storage.objects[i].y + dy, storage.objects[i].rect.Width, storage.objects[i].rect.Height);
+                            storage.objects[i].y += dy;
+                            storage.objects[i].x += dx;
+
                         }
             }
-             public override void New_Color()
+            public override void New_Color()
             {
                 ;
             }
-             public override void Resize(Storage storage, int dx)
+            public override void Resize(Storage storage, int dx)
             {
-                for (int i = 0; i < sizeStorage; i++)
+                for (int i = 0; i < storage.currentSize; i++)
                     if (!storage.proverka(i))
                         if (storage.objects[i].choose == true)
                         {
@@ -199,13 +212,13 @@ namespace Даукаев_Лаба7ООП
                             storage.objects[i].R += dx;
                         }
             }
-             public override void Save(StreamWriter stream)
+            public override void Save(StreamWriter stream)
             {
                 stream.WriteLine("Square");
                 stream.WriteLine((x + R) + " " + (y + R) + " " + R + " " + color.R + " " + color.G + " " + color.B);
             }
-             public override void Load(StreamReader stream)
-        {
+            public override void Load(StreamReader stream)
+            {
                 string[] data = stream.ReadLine().Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
                 x = Convert.ToInt32(data[0]);
                 y = Convert.ToInt32(data[1]);
@@ -213,20 +226,20 @@ namespace Даукаев_Лаба7ООП
                 color = Color.FromArgb(Convert.ToInt32(data[3]), Convert.ToInt32(data[4]), Convert.ToInt32(data[5]));
                 //Resize();
             }
-           /*  public override string Show()
-        {
-            ;
-        }*/
-             public override void Draw()
-        {
-            ;
-        }
+            /*  public override string Show()
+         {
+             ;
+         }*/
+            public override void Draw(Pen pen, Graphics graphics)
+            {
+                graphics.DrawRectangle(pen, x, y, R * 2, R * 2);
+            }
         }
 
         public class Triangle : Shape
         {
-          
-            
+
+
             public Triangle()
             {
                 ClassName = "Triangle";
@@ -234,7 +247,7 @@ namespace Даукаев_Лаба7ООП
                 y = 0;
                 R = 0;
             }
-            
+
             public Triangle(int x, int y, Color color, int Rad)
             {
                 ClassName = "Triangle";
@@ -253,15 +266,26 @@ namespace Даукаев_Лаба7ООП
             }
             public override void Move(Storage storage, int dx, int dy)
             {
-                for (int i = 0; i < sizeStorage; i++)
+                for (int i = 0; i < storage.currentSize; i++)
+
                     if (!storage.proverka(i))
                         if (storage.objects[i].choose == true)
                         {
+                            if (storage.objects[i] is Sgroup)
                             {
-                                storage.objects[i].y += dy;
-                                storage.objects[i].x += dx;
-
+                                Sgroup Hi = (Sgroup)storage.objects[i];
+                                for (int j = 0; j < Hi.objects2.currentSize - 1; j++)
+                                {
+                                    Hi.objects2.objects[j].y += dy;
+                                    Hi.objects2.objects[j].x += dx;
+                                }
+                                storage.objects[i] = Hi;
                             }
+
+                            storage.objects[i].rect = new Rectangle(storage.objects[i].x + dx, storage.objects[i].y + dy, storage.objects[i].rect.Width, storage.objects[i].rect.Height);
+                            storage.objects[i].y += dy;
+                            storage.objects[i].x += dx;
+
                         }
             }
             public override void New_Color()
@@ -270,7 +294,7 @@ namespace Даукаев_Лаба7ООП
             }
             public override void Resize(Storage storage, int dx)
             {
-                for (int i = 0; i < sizeStorage; i++)
+                for (int i = 0; i < storage.currentSize; i++)
                     if (!storage.proverka(i))
                         if (storage.objects[i].choose == true)
                         {
@@ -296,7 +320,7 @@ namespace Даукаев_Лаба7ООП
          {
              ;
          }*/
-            public override void Draw()
+            public override void Draw(Pen pen, Graphics graphics)
             {
                 ;
             }
@@ -307,7 +331,7 @@ namespace Даукаев_Лаба7ООП
         }
         public class CCircle : Shape
         {
-          
+
             public CCircle()
             {
                 ClassName = "CCircle";
@@ -329,12 +353,26 @@ namespace Даукаев_Лаба7ООП
             }
             public override void Move(Storage storage, int dx, int dy)
             {
-                for (int i = 0; i < sizeStorage; i++)
+                for (int i = 0; i < storage.currentSize; i++)
+
                     if (!storage.proverka(i))
                         if (storage.objects[i].choose == true)
                         {
-                                storage.objects[i].y += dy;
-                                storage.objects[i].x += dx;
+                            if (storage.objects[i] is Sgroup) 
+                            {
+                                Sgroup Hi = (Sgroup)storage.objects[i];
+                                for (int j = 0; j < Hi.objects2.currentSize - 1; j++)
+                                {
+                                    Hi.objects2.objects[j].y += dy;
+                                    Hi.objects2.objects[j].x += dx;
+                                }
+                                storage.objects[i] = Hi;
+                            }
+                            
+                            storage.objects[i].rect = new Rectangle(storage.objects[i].x + dx, storage.objects[i].y + dy, storage.objects[i].rect.Width, storage.objects[i].rect.Height);
+                            storage.objects[i].y += dy;
+                            storage.objects[i].x += dx;
+
                         }
             }
             public override void New_Color()
@@ -343,7 +381,7 @@ namespace Даукаев_Лаба7ООП
             }
             public override void Resize(Storage storage, int dx)
             {
-                for (int i = 0; i < sizeStorage; i++)
+                for (int i = 0; i < storage.currentSize; i++)
                     if (!storage.proverka(i))
                         if (storage.objects[i].choose == true)
                         {
@@ -369,9 +407,9 @@ namespace Даукаев_Лаба7ООП
          {
              ;
          }*/
-            public override void Draw()
+            public override void Draw(Pen pen, Graphics graphics)
             {
-                ;
+                graphics.DrawEllipse(pen, x, y, R * 2, R * 2);
             }
 
             ~CCircle()
@@ -389,7 +427,7 @@ namespace Даукаев_Лаба7ООП
                 ClassName = "Sgroup";
 
             }
-            public Sgroup(int Width,int Height)
+            public Sgroup(int Width, int Height)
             {
                 objects2 = new Storage(1);
                 ClassName = "Sgroup";
@@ -401,30 +439,63 @@ namespace Даукаев_Лаба7ООП
             }
             public void Add(Shape s)
             {
-                int ind = 0;
-                    int index = 0;
-                
-                objects2.add_object(ref newsize, s, ref ind, ref index);
-              //  sto.get().sticky = false;
-                if (newsize == 2) rect = new Rectangle(s.x, s.y, 2*s.R, 2*s.R);
-                else
+
+
+                objects2.add_object(ref objects2.currentSize, s, ref objects2.currentchislo, ref objects2.currentpozicion);
+                //  sto.get().sticky = false;
+                if (objects2.currentSize == 2)
+                {
+                    rect = new Rectangle(s.x, s.y, 2 * s.R, 2 * s.R);
+                    // Point newPoint = new Point(s.x, s.y);
+                    //rect.Location = newPoint;
+                }
+                else if ((s.Class_Name()) != "Sgroup")
                 {
                     if (s.x < rect.Left)
                     {
                         int tmp = rect.Right;
                         rect.X = s.x;
+                        x = s.x;
                         rect.Width = tmp - rect.X;
+
                     }
-                    if (s.x+(s.R*2) > rect.Right) 
-                        rect.Width = s.x+s.R*2 - rect.X;
+                    if (s.x + (s.R * 2) > rect.Right)
+                    {
+                        rect.Width = s.x + s.R * 2 - rect.X;
+                    }
+
                     if (s.y < rect.Top)
                     {
                         int tmp = rect.Bottom;
                         rect.Y = s.y;
+                        y = s.y;
                         rect.Height = tmp - rect.Y;
                     }
-                    if (s.y + s.R * 2 > rect.Bottom) 
+                    if (s.y + s.R * 2 > rect.Bottom)
                         rect.Height = s.y + s.R * 2 - rect.Y;
+                }
+                else
+                {
+                    if (s.rect.X < rect.Left)
+                    {
+                        int tmp = rect.Right;
+                        rect.X = s.rect.X;
+                        rect.Width = tmp - rect.X;
+
+                    }
+                    if (s.rect.X + (s.rect.Width) > rect.Right)
+                    {
+                        rect.Width = s.rect.X + s.rect.Width - rect.X;
+                    }
+
+                    if (s.rect.Y < rect.Top)
+                    {
+                        int tmp = rect.Bottom;
+                        rect.Y = s.rect.Y;
+                        rect.Height = tmp - rect.Y;
+                    }
+                    if (s.rect.Y + s.rect.Height > rect.Bottom)
+                        rect.Height = s.rect.Y + s.rect.Height - rect.Y;
                 }
             }
             public override string Class_Name()
@@ -433,12 +504,23 @@ namespace Даукаев_Лаба7ООП
             }
             public override void Move(Storage storage, int dx, int dy)
             {
-                for (int i = 0; i < sizeStorage; i++)
+
+                for (int i = 0; i < storage.currentSize; i++)
+
                     if (!storage.proverka(i))
                         if (storage.objects[i].choose == true)
                         {
+                            Sgroup Hi = (Sgroup)storage.objects[i];
+                            for (int j = 0; j < Hi.objects2.currentSize - 1; j++)
+                            {
+                                Hi.objects2.objects[j].y += dy;
+                                Hi.objects2.objects[j].x += dx;
+                            }
+                            storage.objects[i] = Hi;
+                            storage.objects[i].rect = new Rectangle(storage.objects[i].x + dx, storage.objects[i].y + dy, storage.objects[i].rect.Width, storage.objects[i].rect.Height);
                             storage.objects[i].y += dy;
                             storage.objects[i].x += dx;
+
                         }
             }
             public override void New_Color()
@@ -447,7 +529,7 @@ namespace Даукаев_Лаба7ООП
             }
             public override void Resize(Storage storage, int dx)
             {
-                for (int i = 0; i < sizeStorage; i++)
+                for (int i = 0; i < storage.currentSize; i++)
                     if (!storage.proverka(i))
                         if (storage.objects[i].choose == true)
                         {
@@ -459,22 +541,34 @@ namespace Даукаев_Лаба7ООП
             public override void Save(StreamWriter stream)
             {
                 stream.WriteLine("Sgroup");
-                stream.WriteLine((x + R) + " " + (y + R) + " " + R + " " + color.R + " " + color.G + " " + color.B);
+                stream.WriteLine(objects2.currentSize + " " + width + " " + height);
+                if (objects2.currentSize != 1)
+                {
+
+                    for (int i = 0; i < objects2.currentSize - 1; i++)
+                        objects2.objects[i].Save(stream);
+                }
             }
             public override void Load(StreamReader stream)
             {
+                ShapeFactory factory = new ShapeFactory();
                 string[] data = stream.ReadLine().Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                x = Convert.ToInt32(data[0]);
-                y = Convert.ToInt32(data[1]);
-                R = Convert.ToInt32(data[2]);
-                color = Color.FromArgb(Convert.ToInt32(data[3]), Convert.ToInt32(data[4]), Convert.ToInt32(data[5]));
+                int i = Convert.ToInt32(data[0]) - 1;
+                width = Convert.ToInt32(data[1]);
+                height = Convert.ToInt32(data[2]);
+                for (; i > 0; i--)
+                {
+                    Shape tmp = factory.createShape(stream.ReadLine());
+                    tmp.Load(stream);
+                    Add(tmp);
+                }
                 //Resize();
             }
             /*  public override string Show()
          {
              ;
          }*/
-            public override void Draw()
+            public override void Draw(Pen pen, Graphics graphics)
             {
                 ;
             }
@@ -499,7 +593,7 @@ namespace Даукаев_Лаба7ООП
                             }
                             if (storage.objects[i].Class_Name() == "Sgroup")
                             {
-                                if (x< storage.objects[i].rect.Right&& x > storage.objects[i].rect.Left && y < storage.objects[i].rect.Bottom && y > storage.objects[i].rect.Top)
+                                if (x < storage.objects[i].rect.Right && x > storage.objects[i].rect.Left && y < storage.objects[i].rect.Bottom && y > storage.objects[i].rect.Top)
                                     return i;
                             }
                         }
@@ -515,6 +609,11 @@ namespace Даукаев_Лаба7ООП
                             if ((((x < storage.objects[i].polygonPoints[0].X) && (x > storage.objects[i].polygonPoints[1].X) && ((y > storage.objects[i].polygonPoints[0].Y) && (y < storage.objects[i].polygonPoints[1].Y))) || (((x < storage.objects[i].polygonPoints[2].X) && (x > storage.objects[i].polygonPoints[0].X)) && ((y < storage.objects[i].polygonPoints[2].Y) && (y > storage.objects[i].polygonPoints[0].Y)))))
                                 return i;
 
+                        }
+                        if (storage.objects[i].Class_Name() == "Sgroup")
+                        {
+                            if (x + R < storage.objects[i].rect.Right && x + R > storage.objects[i].rect.Left && y + R < storage.objects[i].rect.Bottom && y + R > storage.objects[i].rect.Top)
+                                return i;
                         }
                     }
                 }
@@ -598,7 +697,7 @@ namespace Даукаев_Лаба7ООП
 
                     }
                     else
-                        graphics.DrawRectangle(pen, storage.objects[kolvo_elem].x, storage.objects[kolvo_elem].y, storage.objects[kolvo_elem].R * 2, storage.objects[kolvo_elem].R * 2);
+                        graphics.DrawRectangle(pen1, storage.objects[kolvo_elem].x, storage.objects[kolvo_elem].y, storage.objects[kolvo_elem].R * 2, storage.objects[kolvo_elem].R * 2);
                 }
                 else if (storage.objects[kolvo_elem].Class_Name() == "Triangle")
                 {
@@ -616,17 +715,24 @@ namespace Даукаев_Лаба7ООП
                 if (storage.objects[kolvo_elem].Class_Name() == "Sgroup")
                 {
                     Sgroup Hi = (Sgroup)storage.objects[kolvo_elem];
-                    graphics.DrawRectangle(pen1, Hi.rect);
+                    if (storage.objects[kolvo_elem].choose == true)
+                    {
+                        graphics.DrawRectangle(pen1, storage.objects[kolvo_elem].rect);
+                    }
+                    for (int i = 0; i < Hi.objects2.currentSize - 1; i++)
+                        Hi.objects2.objects[i].Draw(pen, graphics);
+                    graphics.DrawRectangle(pen, storage.objects[kolvo_elem].rect);
+
                 }
             }
             picture.Image = bitmap;
         }
         private void Remove_Selection(ref Storage storage)
         {
-            for (int i = 0; i < sizeStorage; ++i)
+            for (int i = 0; i < storage.currentSize; ++i)
                 if (!storage.proverka(i))
                 {
-                    if ( storage.objects[i].choose == true)
+                    if (storage.objects[i].choose == true)
                     {
                         storage.objects[i].choose = false;
                         storage.objects[i].color = current_color;
@@ -637,28 +743,28 @@ namespace Даукаев_Лаба7ООП
         }
         private void picture_MouseClick(object sender, MouseEventArgs e)
         {
-            Shape krug = new CCircle(e.X, e.Y, current_color,60);
+            Shape krug = new CCircle(e.X, e.Y, current_color, 60);
             if (кругToolStripMenuItem.Checked)
             {
-                krug = new CCircle(e.X, e.Y, current_color,60);
+                krug = new CCircle(e.X, e.Y, current_color, 60);
             }
             else if (квадратToolStripMenuItem.Checked)
             {
-                krug = new Square(e.X, e.Y, current_color,60);
+                krug = new Square(e.X, e.Y, current_color, 60);
             }
             else if (треугольникToolStripMenuItem.Checked)
             {
-                krug = new Triangle(e.X, e.Y, current_color,60);
+                krug = new Triangle(e.X, e.Y, current_color, 60);
             }
             {
-                if (Check_In(ref storage, sizeStorage, krug.x, krug.y, krug.R) != -1)
+                if (Check_In(ref storage, storage.currentSize, krug.x, krug.y, krug.R) != -1)
                 {
                     if (Control.ModifierKeys == Keys.Control)
                     {
                         int x = e.X - krug.R;
                         int y = e.Y - krug.R;
 
-                        for (int i = 0; i < sizeStorage; i++)
+                        for (int i = 0; i < storage.currentSize; i++)
                             if (!storage.proverka(i))
                             {
                                 if (storage.objects[i].choose == true)
@@ -697,6 +803,15 @@ namespace Даукаев_Лаба7ООП
 
                                     }
                                 }
+                                if (storage.objects[i].Class_Name() == "Sgroup")
+                                {
+                                    if (x + storage.objects[i].R < storage.objects[i].rect.Right && x + storage.objects[i].R > storage.objects[i].rect.Left && y + storage.objects[i].R < storage.objects[i].rect.Bottom && y + storage.objects[i].R > storage.objects[i].rect.Top)
+                                    {
+                                        storage.objects[i].color = selected_color;
+                                        storage.objects[i].choose = true;
+                                        MyPaint(i, ref storage);
+                                    }
+                                }
                             }
                     }
                     else
@@ -709,7 +824,7 @@ namespace Даукаев_Лаба7ООП
                             y = e.Y;
                         }
                         Remove_Selection(ref storage);
-                        for (int i = 0; i < sizeStorage; i++)
+                        for (int i = 0; i < storage.currentSize; i++)
                             if (!storage.proverka(i))
                             {
                                 if (storage.objects[i].Class_Name() == "CCircle")
@@ -739,20 +854,29 @@ namespace Даукаев_Лаба7ООП
                                         break;
                                     }
                                 }
+                                else if (storage.objects[i].Class_Name() == "Sgroup")
+                                {
+                                    if (x + storage.objects[i].R < storage.objects[i].rect.Right && x + storage.objects[i].R > storage.objects[i].rect.Left && y + storage.objects[i].R < storage.objects[i].rect.Bottom && y + storage.objects[i].R > storage.objects[i].rect.Top)
+                                    {
+                                        storage.objects[i].choose = true;
+                                        MyPaint(i, ref storage);
+                                        break;
+                                    }
+                                }
                             }
-                        storage.objects[Check_In(ref storage, sizeStorage, krug.x, krug.y, krug.R)].color = selected_color;
-                        storage.objects[Check_In(ref storage, sizeStorage, krug.x, krug.y, krug.R)].choose = true;
-                        MyPaint(Check_In(ref storage, sizeStorage, krug.x, krug.y, krug.R), ref storage);
+                        storage.objects[Check_In(ref storage, storage.currentSize, krug.x, krug.y, krug.R)].color = selected_color;
+                        storage.objects[Check_In(ref storage, storage.currentSize, krug.x, krug.y, krug.R)].choose = true;
+                        MyPaint(Check_In(ref storage, storage.currentSize, krug.x, krug.y, krug.R), ref storage);
                         button3_Click(sender, e);
                     }
                     return;
                 }
-                storage.add_object(ref sizeStorage, krug, ref kolvo_elem, ref index_sozdania);
+                storage.add_object(ref storage.currentSize, krug, ref kolvo_elem, ref index_sozdania);
                 Remove_Selection(ref storage);
                 storage.objects[index_sozdania].color = selected_color;
                 storage.objects[index_sozdania].choose = true;
                 MyPaint(index_sozdania, ref storage);
-                
+
                 button3_Click(sender, e);
             }
 
@@ -792,13 +916,16 @@ namespace Даукаев_Лаба7ООП
         {
 
             public Shape[] objects;
+            public int currentSize = 1;
+            public int currentchislo;
+            public int currentpozicion;
             public Storage(int size)
             {
                 objects = new Shape[size];
                 for (int i = 0; i < size; i++)
                     objects[i] = null;
             }
-            public void add_object(ref int size,  Shape new_object, ref int ind, ref int index_sozdania)
+            public void add_object(ref int size, Shape new_object, ref int ind, ref int index_sozdania)
             {
                 Storage storage1 = new Storage(size + 1);
                 for (int i = 0; i < size; i++)
@@ -810,6 +937,10 @@ namespace Даукаев_Лаба7ООП
                 objects[ind] = new_object;
                 index_sozdania = ind;
                 ind++;
+            }
+            public int getsize()
+            {
+                return currentSize;
             }
             public Shape GetObject(int index)
             {
@@ -845,17 +976,17 @@ namespace Даукаев_Лаба7ООП
                     kolvo_elem--;
                 }
             }
-            public void Delte_obj1( int pozicia)
+            public void Delte_obj1(int pozicia)
             {
                 if (objects[pozicia] != null)
                 {
                     objects[pozicia] = null;
-                    for(int i = pozicia; i < sizeStorage-1; i++)
+                    for (int i = pozicia; i < currentSize - 1; i++)
                     {
                         objects[i] = objects[i + 1];
                     }
-                    sizeStorage--;
-                    
+                    currentSize--;
+
                 }
 
             }
@@ -867,7 +998,7 @@ namespace Даукаев_Лаба7ООП
         private void button2_Click(object sender, EventArgs e)
         {
             graphics.Clear(Color.White);
-            for (int i = 0; i < sizeStorage; i++)
+            for (int i = 0; i < storage.currentSize; i++)
             {
                 if (!storage.proverka(i))
                 {
@@ -880,8 +1011,8 @@ namespace Даукаев_Лаба7ООП
         private void button3_Click(object sender, EventArgs e)
         {
             graphics.Clear(Color.White);
-            if (storage.kolvo_zanyatix(sizeStorage) != 0)
-                for (int i = 0; i < sizeStorage; ++i)
+            if (storage.kolvo_zanyatix(storage.currentSize) != 0)
+                for (int i = 0; i < storage.currentSize; ++i)
                 {
                     MyPaint(i, ref storage); // Рисует круг
                     if (!storage.proverka(i))
@@ -893,22 +1024,22 @@ namespace Даукаев_Лаба7ООП
         private void button4_Click(object sender, EventArgs e)
         {
 
-            for (int i = 0; i < sizeStorage; i++)
+            for (int i = 0; i < storage.currentSize; i++)
             {
                 storage.Delte_obj(ref i);
             }
-            sizeStorage = 1;
-            storage = new Storage(sizeStorage);
+            storage.currentSize = 1;
+            storage = new Storage(storage.currentSize);
             kolvo_elem = 0;
             index_sozdania = 0;
         }
 
         private void ButtonDelThis_Click(object sender, EventArgs e)
         {
-            if (storage.kolvo_zanyatix(sizeStorage) != 0)
-                for (int i = 0; i < sizeStorage; i++)
+            if (storage.kolvo_zanyatix(storage.currentSize) != 0)
+                for (int i = 0; i < storage.currentSize; i++)
                     if (storage.proverka(i) == false && (storage.objects[i].choose == true))
-                        storage.Delte_obj1( i);
+                        storage.Delte_obj1(i);
 
             button2_Click(sender, e);
             button3_Click(sender, e);
@@ -958,28 +1089,28 @@ namespace Даукаев_Лаба7ООП
             {
                 if (e.KeyChar == (char)Keys.S)
                 {
-                        storage.objects[0].Move(storage, 0, 3);
+                    storage.objects[storage.currentSize - 2].Move(storage, 0, 3);
                 }
-                  else if (e.KeyChar == (char)Keys.A)
-                  {
-                 storage.objects[0].Move(storage, -3, 0);
-                  }
-                  else if (e.KeyChar == (char)Keys.D)
-                  {
-                    storage.objects[0].Move(storage, 3, 0);
+                else if (e.KeyChar == (char)Keys.A)
+                {
+                    storage.objects[storage.currentSize - 2].Move(storage, -3, 0);
                 }
-                  else if (e.KeyChar == (char)Keys.W)
-                  {
-                    storage.objects[0].Move(storage, 0, -3);
+                else if (e.KeyChar == (char)Keys.D)
+                {
+                    storage.objects[storage.currentSize - 2].Move(storage, 3, 0);
                 }
-                  else if (e.KeyChar == (char)Keys.L)
-                  {
-                    storage.objects[0].Resize(storage,2);
+                else if (e.KeyChar == (char)Keys.W)
+                {
+                    storage.objects[storage.currentSize - 2].Move(storage, 0, -3);
+                }
+                else if (e.KeyChar == (char)Keys.L)
+                {
+                    storage.objects[storage.currentSize - 2].Resize(storage, 2);
                 }
 
-                  else if (e.KeyChar == (char)Keys.K)
-                  {
-                    storage.objects[0].Resize(storage, -2);
+                else if (e.KeyChar == (char)Keys.K)
+                {
+                    storage.objects[storage.currentSize - 2 ].Resize(storage, -2);
                 }
                 /*
           if (e.KeyChar == (char)Keys.S)
@@ -1075,7 +1206,7 @@ namespace Даукаев_Лаба7ООП
       }*/
             }
             button3_Click(sender, e);
-            
+
             return;
         }
 
@@ -1123,10 +1254,7 @@ namespace Даукаев_Лаба7ООП
             button3_Click(sender, e);
         }
 
-        private void picture_Paint(object sender, PaintEventArgs e)
-        {
 
-        }
 
         private void Saving_Click(object sender, EventArgs e)
         {
@@ -1134,11 +1262,11 @@ namespace Даукаев_Лаба7ООП
             {
                 FileStream f = new FileStream(saveFileDialog1.FileName, FileMode.Create);
                 StreamWriter stream = new StreamWriter(f);
-                stream.WriteLine(sizeStorage);
-                if (sizeStorage != 1)
+                stream.WriteLine(storage.currentSize);
+                if (storage.currentSize != 1)
                 {
-                    
-                    for (int i = 0; i < sizeStorage-1; i++)
+
+                    for (int i = 0; i < storage.currentSize - 1; i++)
                         storage.objects[i].Save(stream);
                 }
                 stream.Close();
@@ -1152,9 +1280,9 @@ namespace Даукаев_Лаба7ООП
             {
                 FileStream f = new FileStream(openFileDialog1.FileName, FileMode.Open);
                 StreamReader stream = new StreamReader(f);
-                int i = Convert.ToInt32(stream.ReadLine())-1;
+                int i = Convert.ToInt32(stream.ReadLine()) - 1;
                 Factory shapeFactory = new ShapeFactory();  //фабрика КОНКРЕТНЫХ объектов
-                for (int j=0; j < i; j++)
+                for (int j = 0; j < i; j++)
                 {
                     string tmp = stream.ReadLine();
                     storage.add_object(ref sizeStorage, shapeFactory.createShape(tmp), ref kolvo_elem, ref index_sozdania);
@@ -1170,33 +1298,147 @@ namespace Даукаев_Лаба7ООП
 
         private void BTN_group_Click(object sender, EventArgs e)
         {
-           
-            if (sizeStorage != 0)
+
+            if (storage.currentSize != 0)
             {
                 Sgroup group = new Sgroup(picture.Width, picture.Height);
                 int cnt = 0;
-                for (int i = 0; i < sizeStorage-1; i++) //считаем количество отмеченных элементов
-                    if (storage.objects[i].choose == true) 
+                for (int i = 0; i < storage.currentSize - 1; i++) //считаем количество отмеченных элементов
+                    if (storage.objects[i].choose == true)
                         cnt++;
                 while (cnt != 0)
                 {
-                    for (int i = 0; i < sizeStorage-1; i++)
-                        if (storage.objects[i].choose== true)
-                    {
-                        group.Add(storage.objects[i]);
+                    for (int i = 0; i < storage.currentSize - 1; i++)
+                        if (storage.objects[i].choose == true)
+                        {
+                            group.Add(storage.objects[i]);
                             storage.Delte_obj1(i);
                             kolvo_elem--;
                             index_sozdania--;
-                        cnt--;
-                            
-                    }
-                    
+                            cnt--;
+
+                        }
+
                 }
-                storage.add_object(ref sizeStorage, group, ref kolvo_elem, ref index_sozdania);
+                storage.add_object(ref storage.currentSize, group, ref kolvo_elem, ref index_sozdania);
+                Remove_Selection(ref storage);
+                storage.objects[index_sozdania].color = selected_color;
+                storage.objects[index_sozdania].choose = true;
             }
             picture.Invalidate();
             button3_Click(sender, e);
-            
+
         }
+
+        private void BTN_ungroup_Click(object sender, EventArgs e)
+        {
+            for (int i = 0; i < storage.currentSize - 1; i++)
+            {
+                if (storage.objects[i] is Sgroup)
+                {
+                    while (((Sgroup)storage.objects[i]).objects2.currentSize != 1)
+                    {
+                        for (int j = ((Sgroup)storage.objects[i]).objects2.currentSize -2; j >=0 ; j--)
+                        {
+                            storage.add_object(ref storage.currentSize, (Shape)((Sgroup)storage.objects[i]).objects2.objects[j], ref kolvo_elem, ref index_sozdania);
+                           
+                            ((Sgroup)storage.objects[i]).objects2.Delte_obj1(j);
+                            ((Sgroup)storage.objects[i]).objects2.currentSize--;
+                            ((Sgroup)storage.objects[i]).objects2.currentpozicion--;
+                            ((Sgroup)storage.objects[i]).objects2.currentchislo--;
+                        }
+                    }
+                    storage.Delte_obj1(i);
+                    picture.Invalidate();
+                }
+            }
+        } 
+
+
+        /*   private void treeView1_AfterSelect(object sender, TreeViewEventArgs e)
+           {
+
+                   if ((e.Action == TreeViewAction.ByKeyboard || e.Action == TreeViewAction.ByMouse) && e.Node.Text != "Фигуры")
+                   {
+
+
+                       TreeNode tmp = e.Node;
+
+                       while (tmp.Parent.Text != "Фигуры") tmp = tmp.Parent;
+                       treeView1.SelectedNode = tmp;
+                       for (int i = 0; i < tmp.Index; i++)
+                       {
+
+
+                       }
+
+                   }
+
+
+           }
+
+           private void treeView1_AfterCheck(object sender, TreeViewEventArgs e)
+           {
+
+                   TreeNode tmp = e.Node;
+                   treeView1.SelectedNode = tmp;
+
+
+
+                   for (int i = 0; i < treeView1.SelectedNode.Index; i++)
+                   {
+
+                   }
+
+
+
+                   picture.Invalidate();
+
+               }
+
+           private void treeView1_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
+           {
+
+               TreeNode tmp = e.Node;
+
+               if (e.Button == MouseButtons.Right)
+               {
+                   object
+                   sto.setCurPTR();
+
+                   for (int i = 0; i < tmp.Index; i++)
+                   {
+                       sto.nextCur();
+                   }
+                   if (sto.size() != 0 && sto.get() is SGroup)
+                   {
+                       while (((SGroup)sto.get()).size() != 0)
+                       {
+                           sto.addAfter(((SGroup)sto.get()).Out());
+                           sto.prevCur();
+                       }
+                       sto.del();
+                   }
+               }
+               if (e.Button == MouseButtons.Left)
+               {
+
+                   treeView1.SelectedNode = tmp;
+
+                   sto.toFirst();
+                   for (int i = 0; i <= treeView1.SelectedNode.Index; i++)
+                   {
+                       sto.next();
+                   }
+                   sto.check();
+
+               }
+               pictureBox1.Invalidate();
+
+
+
+
+           }*/
+
     }
 }

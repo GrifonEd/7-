@@ -66,7 +66,6 @@
             this.picture.Size = new System.Drawing.Size(1068, 647);
             this.picture.TabIndex = 0;
             this.picture.TabStop = false;
-            this.picture.Paint += new System.Windows.Forms.PaintEventHandler(this.picture_Paint);
             this.picture.MouseClick += new System.Windows.Forms.MouseEventHandler(this.picture_MouseClick);
             this.picture.MouseMove += new System.Windows.Forms.MouseEventHandler(this.picture_MouseMove);
             // 
@@ -280,6 +279,7 @@
             this.BTN_ungroup.TabIndex = 13;
             this.BTN_ungroup.Text = "Разгруппировать";
             this.BTN_ungroup.UseVisualStyleBackColor = true;
+            this.BTN_ungroup.Click += new System.EventHandler(this.BTN_ungroup_Click);
             // 
             // treeView1
             // 
